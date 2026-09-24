@@ -349,7 +349,7 @@ async function buildCamp(): Promise<Editor> {
   scatterArea(ed, 'td:reed-bank', circle(1880, 200, 260, 14, rng), [], { density: 0.6, size: 200 }, rng);
 
   // --- Twilight: cool blue-purple ambient vs. warm orange campfire
-  ed.setKey('lighting', { ...lightingFromPreset('twilight', 230), ambient: 0.46 }, 'Lighting');
+  ed.setKey('lighting', { ...lightingFromPreset('twilight', 230), ambient: 0.6 }, 'Lighting');
   const lights = [
     { ...makeLight(ed, C.x, C.y, 'campfire'), radius: 620, intensity: 1.35, shadowStrength: 0.7 },
     { ...makeLight(ed, tentPos[0].x + 90, tentPos[0].y + 40, 'lantern'), radius: 190 },

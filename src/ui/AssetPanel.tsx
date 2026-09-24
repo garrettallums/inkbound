@@ -111,7 +111,7 @@ export function AssetPanel({ editor: ed }: { editor: Editor }) {
       <Section title="Mode">
         <Seg full value={s.mode} onChange={(v) => set({ mode: v })} options={[
           { value: 'place', label: 'Place', tip: 'Click to place the selected asset repeatedly (Esc to stop)' },
-          { value: 'scatter', label: 'Scatter brush', tip: 'Paint many assets at once — forests, rocks, villages' },
+          { value: 'scatter', label: 'Scatter', tip: 'Paint many assets at once — forests, rocks, villages' },
           { value: 'erase', label: 'Erase', tip: 'Brush away scattered assets from the current set (Shift: any asset)' },
         ]} />
       </Section>

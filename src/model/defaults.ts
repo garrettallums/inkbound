@@ -78,13 +78,13 @@ export const THEMES: Record<string, TerrainTheme> = {
   },
   dungeon: {
     name: 'Dungeon', waterTexture: 'dungeon-void', landTexture: 'flagstone', waterColor: '#16151a', landColor: '#77736b',
-    coastStyle: 'dungeon', outlineColor: '#0b0a0c', outlineWidth: 7, glowColor: '#000000', glowWidth: 26, ripples: 0,
-    rippleColor: '#000000', shoreTexture: null, shoreWidth: 0, innerShade: 0.5, textureScale: 1,
+    coastStyle: 'dungeon', outlineColor: '#3a3632', outlineWidth: 9, glowColor: '#000000', glowWidth: 30, ripples: 0,
+    rippleColor: '#8f887d', shoreTexture: null, shoreWidth: 0, innerShade: 0.5, textureScale: 1,
   },
   interior: {
     name: 'Interior', waterTexture: 'dungeon-void', landTexture: 'planks', waterColor: '#1a1714', landColor: '#8a6a45',
-    coastStyle: 'dungeon', outlineColor: '#15110d', outlineWidth: 9, glowColor: '#000000', glowWidth: 22, ripples: 0,
-    rippleColor: '#000000', shoreTexture: null, shoreWidth: 0, innerShade: 0.45, textureScale: 1,
+    coastStyle: 'dungeon', outlineColor: '#4a3b2c', outlineWidth: 12, glowColor: '#000000', glowWidth: 22, ripples: 0,
+    rippleColor: '#6e6254', shoreTexture: null, shoreWidth: 0, innerShade: 0.45, textureScale: 1,
   },
 };
 
@@ -94,9 +94,9 @@ export const LIGHTING_PRESETS: Record<LightingPreset, Omit<LightingSettings, 'en
   day: { ambient: 1, ambientColor: '#ffffff', temperature: 0, contrast: 0.05, shadowIntensity: 0.4 },
   golden: { ambient: 0.92, ambientColor: '#ffd592', temperature: 0.35, contrast: 0.1, shadowIntensity: 0.55 },
   sunset: { ambient: 0.72, ambientColor: '#ff9c72', temperature: 0.45, contrast: 0.12, shadowIntensity: 0.6 },
-  twilight: { ambient: 0.5, ambientColor: '#6d62a6', temperature: -0.35, contrast: 0.08, shadowIntensity: 0.45 },
-  night: { ambient: 0.3, ambientColor: '#28346a', temperature: -0.6, contrast: 0.1, shadowIntensity: 0.3 },
-  moonlight: { ambient: 0.45, ambientColor: '#7c95cf', temperature: -0.45, contrast: 0.08, shadowIntensity: 0.4 },
+  twilight: { ambient: 0.72, ambientColor: '#8c7cc4', temperature: -0.3, contrast: 0.08, shadowIntensity: 0.45 },
+  night: { ambient: 0.62, ambientColor: '#6475b8', temperature: -0.45, contrast: 0.1, shadowIntensity: 0.3 },
+  moonlight: { ambient: 0.68, ambientColor: '#9aaee0', temperature: -0.35, contrast: 0.08, shadowIntensity: 0.4 },
   overcast: { ambient: 0.82, ambientColor: '#b9bec7', temperature: -0.1, contrast: -0.15, shadowIntensity: 0.15 },
 };
 
@@ -166,7 +166,7 @@ export function createProjectDoc(o: NewProjectOptions): ProjectDoc {
     objects: {},
     grid: {
       type: info.grid, size: info.gridSize, opacity: info.pack === 'atlas' ? 0.25 : 0.35, thickness: 1.5,
-      color: info.theme === 'dungeon' || info.theme === 'cave' ? '#e8e0d0' : '#1d1a16', offsetX: 0, offsetY: 0, snap: false,
+      color: info.theme === 'dungeon' || info.theme === 'cave' || info.theme === 'interior' ? '#e8e0d0' : '#1d1a16', offsetX: 0, offsetY: 0, snap: false,
     },
     lighting: lightingFromPreset(info.lighting),
     camera: null,

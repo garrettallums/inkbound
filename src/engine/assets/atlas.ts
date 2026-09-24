@@ -372,17 +372,49 @@ const volcano: Drawer = (c, w, h, rng, p) => {
 
 // --------------------------------------------------------------------------- settlements
 
+/** Three-quarter view cottage: lit gable front, shaded side wall, long roof plane. */
 function house(c: C, x: number, y: number, s: number, p: Pal, roof?: string, lw?: number) {
-  const L = lw ?? Math.max(0.5, s * 0.08);
-  const ww = s, wh = s * 0.6;
-  c.fillStyle = p.wall;
-  c.fillRect(x - ww / 2, y - wh, ww, wh);
-  c.strokeStyle = p.ink; c.lineWidth = L;
-  c.strokeRect(x - ww / 2, y - wh, ww, wh);
-  poly(c, [[x - ww / 2 - s * 0.1, y - wh], [x, y - wh - s * 0.6], [x + ww / 2 + s * 0.1, y - wh]]);
-  c.fillStyle = roof ?? p.roof; c.fill(); ink(c, L, p.ink);
-  c.fillStyle = p.ink;
-  c.fillRect(x - s * 0.1, y - wh * 0.55, s * 0.2, wh * 0.55);
+  const L = lw ?? Math.max(0.5, s * 0.07);
+  const r = roof ?? p.roof;
+  const fw = s * 0.52, h = s * 0.46, dx = s * 0.42, dy = -s * 0.17, gable = s * 0.36;
+  const xl = x - s / 2, xr = xl + fw, xm = xl + fw / 2;
+  c.lineJoin = 'round';
+  c.strokeStyle = p.ink;
+  c.lineWidth = L;
+  // side wall (shaded)
+  poly(c, [[xr, y], [xr + dx, y + dy], [xr + dx, y - h + dy], [xr, y - h]]);
+  c.fillStyle = shade(p.wall, -0.22); c.fill(); c.stroke();
+  // front wall + gable (lit)
+  poly(c, [[xl, y], [xr, y], [xr, y - h], [xm, y - h - gable], [xl, y - h]]);
+  c.fillStyle = p.wall; c.fill(); c.stroke();
+  // roof plane running back from the gable
+  poly(c, [[xm, y - h - gable], [xr, y - h], [xr + dx, y - h + dy], [xm + dx, y - h - gable + dy]]);
+  c.fillStyle = linear(c, xm, y - h - gable, xr + dx, y - h, [[0, shade(r, 0.12)], [1, shade(r, -0.18)]]); c.fill(); c.stroke();
+  // roof eave overhang on the gable edge
+  c.lineWidth = L * 1.4;
+  line(c, xl - s * 0.04, y - h + s * 0.03, xm, y - h - gable); c.stroke();
+  line(c, xm, y - h - gable, xr + s * 0.04, y - h + s * 0.03); c.stroke();
+  c.lineWidth = L;
+  // shingle hints
+  c.strokeStyle = shade(r, -0.4);
+  c.lineWidth = L * 0.5;
+  for (let i = 1; i < 3; i++) {
+    const t = i / 3;
+    line(c, xm + (xr - xm) * t, y - h - gable + gable * t, xm + (xr - xm) * t + dx, y - h - gable + gable * t + dy); c.stroke();
+  }
+  c.strokeStyle = p.ink;
+  c.lineWidth = L;
+  // door & windows
+  c.fillStyle = p === COLOR ? '#3b2a1c' : p.ink;
+  c.fillRect(xm - s * 0.07, y - h * 0.55, s * 0.14, h * 0.55);
+  c.fillStyle = p === COLOR ? '#f0c96a' : shade(p.wall, -0.4);
+  poly(c, [[xr + dx * 0.3, y - h * 0.62 + dy * 0.3], [xr + dx * 0.62, y - h * 0.62 + dy * 0.62], [xr + dx * 0.62, y - h * 0.32 + dy * 0.62], [xr + dx * 0.3, y - h * 0.32 + dy * 0.3]]);
+  c.fill(); c.lineWidth = L * 0.6; c.stroke(); c.lineWidth = L;
+  // chimney
+  const cx = xm + dx * 0.72 + (xr - xm) * 0.35, cy = y - h - gable * 0.65 + dy * 0.72;
+  c.fillStyle = shade(p.rockLight, -0.1);
+  c.fillRect(cx - s * 0.05, cy - s * 0.16, s * 0.1, s * 0.16);
+  c.strokeRect(cx - s * 0.05, cy - s * 0.16, s * 0.1, s * 0.16);
 }
 
 function tower(c: C, x: number, y: number, s: number, h: number, p: Pal, lw: number) {

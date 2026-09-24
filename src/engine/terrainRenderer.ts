@@ -242,9 +242,13 @@ export class TerrainRenderer {
     ctx.beginPath();
     ctx.rect(r.x, r.y, r.w, r.h);
     ctx.clip();
-    // 1. water
+    // 1. water (two offset/rotated passes hide tile repetition)
     ctx.fillStyle = texturePattern(ctx, t.waterTexture, t.textureScale);
     ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = texturePattern(ctx, t.waterTexture, t.textureScale * 1.618, 37);
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.globalAlpha = 1;
     const usePreview = !this.hasContours || (this.dirty && rectsIntersect(this.dirty, r));
     if (usePreview) {
       this.drawPreviewLand(ctx, r, pxPerUnit);
@@ -268,7 +272,7 @@ export class TerrainRenderer {
     const waterPat = texturePattern(ctx, t.waterTexture, t.textureScale);
     // 2. hatching band (dungeons)
     if (t.coastStyle === 'dungeon') {
-      strokeAll(t.glowWidth * 2, hatchPattern(ctx, rgba(t.outlineColor, 0.55)), 1);
+      strokeAll(t.glowWidth * 2, hatchPattern(ctx, rgba(t.rippleColor, 0.6)), 1);
     }
     // 3. ripples
     if (t.ripples > 0) {
@@ -294,9 +298,13 @@ export class TerrainRenderer {
       strokeAll(t.shoreWidth * 2, pat, 0.9);
       strokeAll(t.shoreWidth * 1.3, pat, 1);
     }
-    // 6. land
+    // 6. land (plus an anti-tiling pass at a different scale & angle)
     ctx.fillStyle = texturePattern(ctx, t.landTexture, t.textureScale);
     ctx.fill(this.fill, 'nonzero');
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = texturePattern(ctx, t.landTexture, t.textureScale * 1.618, 37);
+    ctx.fill(this.fill, 'nonzero');
+    ctx.globalAlpha = 1;
     // 7. inner shading along the coast (clipped to land)
     if (t.innerShade > 0) {
       ctx.save();
@@ -322,7 +330,7 @@ export class TerrainRenderer {
     // Low-frequency tonal variation breaks up texture repetition over big maps.
     ctx.save();
     ctx.globalCompositeOperation = 'soft-light';
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 0.5;
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(this.getMacro(), 0, 0, this.worldW, this.worldH);
     ctx.restore();
@@ -349,6 +357,10 @@ export class TerrainRenderer {
     tc.drawImage(this.mask.canvas, 0, 0, this.mask.w / ms, this.mask.h / ms);
     tc.globalCompositeOperation = 'source-in';
     tc.fillStyle = texturePattern(tc, t.landTexture, t.textureScale);
+    tc.fillRect(r.x, r.y, r.w, r.h);
+    tc.globalCompositeOperation = 'source-atop';
+    tc.globalAlpha = 0.45;
+    tc.fillStyle = texturePattern(tc, t.landTexture, t.textureScale * 1.618, 37);
     tc.fillRect(r.x, r.y, r.w, r.h);
     tc.restore();
     ctx.drawImage(this.temp, 0, 0, dw, dh, r.x, r.y, dw / pxPerUnit, dh / pxPerUnit);
