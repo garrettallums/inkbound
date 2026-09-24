@@ -179,6 +179,9 @@ export interface TerrainTheme {
   shoreWidth: number;
   innerShade: number;
   textureScale: number;
+  /** Non-destructive colour adjustments for the base textures. */
+  landAdjust?: ColorAdjust;
+  waterAdjust?: ColorAdjust;
 }
 
 export interface Camera {

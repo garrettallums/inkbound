@@ -1,5 +1,5 @@
 import { makeCanvas, ctx2d } from '../core/canvas';
-import { hexToRgb, type RGB } from '../core/color';
+import { adjustKey, applyAdjustToPixels, hexToRgb, type ColorAdjust, type RGB } from '../core/color';
 import { getNoise } from '../core/noise';
 import { mulberry32, hashString, type Rng } from '../core/rng';
 
@@ -377,8 +377,24 @@ export const TEXTURE_MAP = new Map(TEXTURES.map((t) => [t.id, t]));
 
 const canvasCache = new Map<string, HTMLCanvasElement>();
 
-/** The tile canvas for a texture (generated on first use, then cached). */
-export function getTextureCanvas(id: string): HTMLCanvasElement {
+/** The tile canvas for a texture (generated on first use, then cached). Colour adjustments are cached variants. */
+export function getTextureCanvas(id: string, adjust?: ColorAdjust): HTMLCanvasElement {
+  const ak = adjust ? adjustKey(adjust) : '';
+  if (ak) {
+    const key = `${id}|${ak}`;
+    let v = canvasCache.get(key);
+    if (!v) {
+      const base = getTextureCanvas(id);
+      v = makeCanvas(base.width, base.height);
+      const x = ctx2d(v, { willReadFrequently: true });
+      x.drawImage(base, 0, 0);
+      const img = x.getImageData(0, 0, v.width, v.height);
+      applyAdjustToPixels(img.data, adjust!);
+      x.putImageData(img, 0, 0);
+      canvasCache.set(key, v);
+    }
+    return v;
+  }
   let c = canvasCache.get(id);
   if (c) return c;
   const def = TEXTURE_MAP.get(id) ?? TEXTURES[0];
@@ -401,8 +417,8 @@ export const TEXTURE_WORLD_SIZE = 400;
  * A repeating pattern in *world units*. Draw with the context transform set to
  * world → device so textures stay anchored to the map at any zoom level.
  */
-export function texturePattern(ctx: CanvasRenderingContext2D, id: string, textureScale = 1, rotationDeg = 0): CanvasPattern {
-  const pat = ctx.createPattern(getTextureCanvas(id), 'repeat')!;
+export function texturePattern(ctx: CanvasRenderingContext2D, id: string, textureScale = 1, rotationDeg = 0, adjust?: ColorAdjust): CanvasPattern {
+  const pat = ctx.createPattern(getTextureCanvas(id, adjust), 'repeat')!;
   const k = (TEXTURE_WORLD_SIZE * textureScale) / PX;
   let m = new DOMMatrix().scale(k, k);
   if (rotationDeg) m = m.rotate(rotationDeg);

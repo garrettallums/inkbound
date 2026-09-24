@@ -76,6 +76,23 @@ export function MapSettingsPanel({ editor: ed }: { editor: Editor }) {
         {t.shoreTexture && <Slider label="Shore width" value={t.shoreWidth} min={0} max={120} step={1} onChange={(v) => setTheme({ shoreWidth: v })} />}
         <Slider label="Inner coast shading" value={t.innerShade} min={0} max={1} step={0.01} onChange={(v) => setTheme({ innerShade: v })} />
       </Section>
+      {(['land', 'water'] as const).map((which) => {
+        const key = which === 'land' ? 'landAdjust' : 'waterAdjust';
+        const a = t[key] ?? {};
+        const setA = (patch: object) => setTheme({ [key]: { ...(ed.doc.theme[key] ?? {}), ...patch } } as Partial<TerrainTheme>, `Adjust ${which} colour`);
+        return (
+          <Section key={which} title={`${which === 'land' ? 'Land' : 'Water'} colour`} right={<button className="btn small ghost" onClick={() => setTheme({ [key]: undefined } as Partial<TerrainTheme>, `Reset ${which} colour`)}>Reset</button>}>
+            <Slider label="Hue" value={a.hue ?? 0} min={-180} max={180} step={1} precision={0} onChange={(v) => setA({ hue: v })} />
+            <Slider label="Saturation" value={a.saturation ?? 0} min={-1} max={1} step={0.01} onChange={(v) => setA({ saturation: v })} />
+            <Slider label="Brightness" value={a.brightness ?? 0} min={-1} max={1} step={0.01} onChange={(v) => setA({ brightness: v })} />
+            <Slider label="Temperature" value={a.temperature ?? 0} min={-1} max={1} step={0.01} onChange={(v) => setA({ temperature: v })} />
+          </Section>
+        );
+      })}
+      <Section title="View">
+        <Slider label="Min zoom %" value={Math.round(ed.settings.zoomMin * 100)} min={1} max={100} step={1} precision={0} onChange={(v) => ed.updateSettings('zoomMin', v / 100)} />
+        <Slider label="Max zoom %" value={Math.round(ed.settings.zoomMax * 100)} min={100} max={3200} step={25} precision={0} onChange={(v) => ed.updateSettings('zoomMax', v / 100)} />
+      </Section>
     </>
   );
 }

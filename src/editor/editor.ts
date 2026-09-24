@@ -678,11 +678,12 @@ export class Editor {
   }
 
   get minZoom() {
-    return Math.min(0.05, this.fitZoom() * 0.5);
+    // never prevent fitting the whole map on screen
+    return Math.min(this.settings.zoomMin, this.fitZoom() * 0.5);
   }
 
   get maxZoom() {
-    return this.doc.assetPack === 'atlas' ? 16 : 6;
+    return Math.max(1, this.settings.zoomMax);
   }
 
   fitZoom() {

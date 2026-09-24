@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronLeft, CloudFog, Download, Eye, Grid3x3, Hand, Keyboard, Lightbulb, Maximize, Minus, Mountain, MousePointer2,
   PanelRightClose, PanelRight, Plus, Redo2, Route, Settings2, Trees, Type, Undo2, Paintbrush,
@@ -225,15 +225,17 @@ export function EditorView({ editor: ed, onExit }: { editor: Editor; onExit: () 
 
 function NameField({ ed }: { ed: Editor }) {
   const [v, setV] = useState<string | null>(null);
+  const cancelled = useRef(false);
   const commit = () => {
     const n = (v ?? '').trim();
-    if (v !== null && n && n !== ed.doc.name) ed.setKey('name', n, 'Rename map');
+    if (!cancelled.current && v !== null && n && n !== ed.doc.name) ed.setKey('name', n, 'Rename map');
+    cancelled.current = false;
     setV(null);
   };
   return (
     <input className="project-name" value={v ?? ed.doc.name} aria-label="Map name"
       onFocus={() => setV(ed.doc.name)} onChange={(e) => setV(e.target.value)} onBlur={commit}
-      onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') { setV(null); e.currentTarget.blur(); } }} />
+      onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') { cancelled.current = true; e.currentTarget.blur(); } }} />
   );
 }
 

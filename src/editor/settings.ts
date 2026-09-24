@@ -49,6 +49,9 @@ export interface ToolSettings {
   text: TextToolSettings;
   light: LightToolSettings;
   snap: boolean;
+  /** Configurable camera zoom limits (fractions, 1 = 100%). */
+  zoomMin: number;
+  zoomMax: number;
 }
 
 export interface BrushPreset {
@@ -91,5 +94,7 @@ export function defaultToolSettings(pack: 'atlas' | 'topdown', assetScale: numbe
     text: { presetId: atlas ? 'region' : 'building' },
     light: { kind: 'torch' },
     snap: false,
+    zoomMin: 0.05,
+    zoomMax: atlas ? 16 : 6,
   };
 }

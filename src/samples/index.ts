@@ -171,7 +171,10 @@ async function buildVarren(): Promise<Editor> {
   const rocky = { x: 1500, y: 980, r: 110 };
 
   // --- Ground textures
-  const forestPoly: Vec[] = [{ x: 0, y: 0 }, { x: riverX(0) - 90, y: 0 }, { x: riverX(800) - 90, y: 800 }, { x: riverX(1600) - 120, y: H }, { x: 0, y: H }];
+  // Forest edge follows the river's west bank with an irregular margin.
+  const edge: Vec[] = [];
+  for (let y = 0; y <= H; y += 60) edge.push({ x: riverX(y) - 70 - Math.abs(Math.sin(y / 97) * 60 + Math.sin(y / 41) * 25), y });
+  const forestPoly: Vec[] = [{ x: 0, y: 0 }, ...edge, { x: 0, y: H }];
   paintArea(ed, brushFor('forest-floor', 150 * k * 0.6, { opacity: 0.7 }), forestPoly, rng, 0.7);
   paintArea(ed, brushFor('farmland', 90, { opacity: 0.9, hardness: 0.45 }), circle(farm.x, farm.y, farm.r * 0.9, 20, rng), rng, 0.45);
   paintArea(ed, brushFor('meadow', 70), circle(farm.x, farm.y - 40, farm.r * 1.15, 20, rng), rng, 0.8);
@@ -203,7 +206,9 @@ async function buildVarren(): Promise<Editor> {
   ];
   scatterArea(ed, 'atlas:conifer', forestPoly, clearings, { density: 0.62, spacing: 0.95, size: 70 * k }, rng);
   scatterArea(ed, 'atlas:dark-pine', circle(420, 620, 260, 16, rng), clearings, { density: 0.7, spacing: 0.9, size: 60 * k }, rng);
-  const eastPoly: Vec[] = [{ x: riverX(0) + 70, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: riverX(H) + 90, y: H }];
+  const eastEdge: Vec[] = [];
+  for (let y = H; y >= 0; y -= 60) eastEdge.push({ x: riverX(y) + 80 + Math.abs(Math.sin(y / 83) * 70 + Math.sin(y / 37) * 20), y });
+  const eastPoly: Vec[] = [{ x: W, y: 0 }, { x: W, y: H }, ...eastEdge];
   scatterArea(ed, 'atlas:mixed', eastPoly, clearings, { density: 0.3, spacing: 1, size: 70 * k }, rng);
   scatterArea(ed, 'atlas:marsh', circle(shack.x - 40, shack.y + 60, 130, 14, rng), [{ ...shack, r: 50 }], { density: 0.5, size: 40 * k, rules: { avoidWater: false } }, rng);
 
