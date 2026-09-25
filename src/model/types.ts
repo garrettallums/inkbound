@@ -3,7 +3,7 @@ import type { Vec } from '../core/geom';
 
 export type MapType = 'world' | 'region' | 'settlement' | 'battlemap' | 'dungeon' | 'cave' | 'camp' | 'interior';
 
-export type LayerKind = 'terrain' | 'paint' | 'objects' | 'grid' | 'effects' | 'lighting' | 'folder';
+export type LayerKind = 'terrain' | 'paint' | 'objects' | 'grid' | 'effects' | 'lighting' | 'folder' | 'reference';
 
 /** Default destinations for new objects when "auto layer" placement is on. */
 export type LayerRole = 'vegetation' | 'buildings' | 'paths' | 'labels' | 'details' | 'ground' | 'mountains';

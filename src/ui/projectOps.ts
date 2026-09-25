@@ -9,11 +9,16 @@ import { installTools } from '../tools';
 import { pendingEditors, navigate } from './router';
 import { toast } from './toast';
 
-export async function createMap(o: NewProjectOptions & { start: StartTerrain }) {
+export async function createMap(o: NewProjectOptions & { start: StartTerrain; reference?: Blob }) {
   await library.load();
   const doc = createProjectDoc(o);
   const ed = Editor.create(doc, o.start);
   ed.toast = toast;
+  if (o.reference) {
+    await ed.setReferenceImage(o.reference);
+    ed.history.clear();
+    ed.setTool('terrain');
+  }
   await ed.save(true);
   pendingEditors.set(doc.id, ed);
   navigate(`#/map/${doc.id}`);

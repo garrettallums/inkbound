@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { CANVAS_PRESETS, MAP_TYPES, MAX_MAP_DIM, MIN_MAP_DIM, THEMES, mapTypeInfo, type StartTerrain } from '../model/defaults';
 import type { MapType } from '../model/types';
@@ -26,6 +26,26 @@ export function NewMapDialog({ onClose }: { onClose: () => void }) {
   const [theme, setTheme] = useState(info.theme);
   const [start, setStart] = useState<StartTerrain>(info.start);
   const [busy, setBusy] = useState(false);
+  const [reference, setReference] = useState<{ file: File; w: number; h: number; url: string } | null>(null);
+  const refInput = useRef<HTMLInputElement>(null);
+
+  const pickReference = async (f: File | undefined) => {
+    if (!f) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(f.type)) { toast('Please choose a PNG, JPEG or WebP image.', 'error'); return; }
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = () => {
+      // Keep the image's proportions; make the long side at least 2400px (at most 4096).
+      const long = Math.max(img.naturalWidth, img.naturalHeight);
+      const k = Math.min(4096, Math.max(2400, long)) / long;
+      const W = Math.round(img.naturalWidth * k), H = Math.round(img.naturalHeight * k);
+      setReference({ file: f, w: W, h: H, url });
+      setW(W); setH(H); setPreset('custom');
+      if (!name) setName(f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
+    };
+    img.onerror = () => toast('Could not read that image.', 'error');
+    img.src = url;
+  };
 
   const pickType = (t: MapType) => {
     setType(t);
@@ -41,7 +61,7 @@ export function NewMapDialog({ onClose }: { onClose: () => void }) {
   const create = async () => {
     setBusy(true);
     try {
-      await createMap({ name: name.trim() || `New ${info.label} Map`, mapType: type, width: w, height: h, theme, start });
+      await createMap({ name: name.trim() || `New ${info.label} Map`, mapType: type, width: w, height: h, theme, start: reference ? 'water' : start, reference: reference?.file });
     } catch (e) {
       toast(e instanceof Error ? e.message : String(e), 'error');
       setBusy(false);
@@ -95,6 +115,22 @@ export function NewMapDialog({ onClose }: { onClose: () => void }) {
         )}
       </div>
       <div className="field">
+        <label>Trace an existing map (optional)</label>
+        <input ref={refInput} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={(e) => { void pickReference(e.target.files?.[0]); e.target.value = ''; }} />
+        {reference ? (
+          <div className="row">
+            <img src={reference.url} alt="" style={{ width: 64, height: 48, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--line-2)' }} />
+            <span className="hint grow">{reference.file.name} — the map will match its proportions. After creating, open <b>Terrain → Trace from image</b> and press <b>Convert</b>.</span>
+            <button className="btn small" onClick={() => setReference(null)}>Remove</button>
+          </div>
+        ) : (
+          <div className="row">
+            <button className="btn" onClick={() => refInput.current?.click()}>Choose image…</button>
+            <span className="hint">A map exported from another tool, a scan or a sketch. It becomes a reference layer you can auto-convert and trace over.</span>
+          </div>
+        )}
+      </div>
+      {!reference && <div className="field">
         <label>Starting terrain</label>
         <div className="chips">
           {STARTS.map((s) => (
@@ -102,7 +138,7 @@ export function NewMapDialog({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <p className="hint">{STARTS.find((s) => s.id === start)?.hint}. Seeded shapes are only a starting point — sculpt them with the Terrain tool.</p>
-      </div>
+      </div>}
     </Modal>
   );
 }

@@ -576,9 +576,11 @@ function drawBorder(ctx: CanvasRenderingContext2D, p: PathObject, g: PathGeometr
     ctx.fill(g.polygon);
     return;
   }
-  ctx.strokeStyle = rgba(p.color, 0.22);
-  ctx.lineWidth = w * 2.4;
-  ctx.stroke(cp);
+  if (p.style !== 'dotted') {
+    ctx.strokeStyle = rgba(p.color, 0.22);
+    ctx.lineWidth = w * 2.4;
+    ctx.stroke(cp);
+  }
   ctx.strokeStyle = p.color;
   ctx.lineWidth = w * 0.5;
   ctx.setLineDash(p.style === 'dotted' ? [0.1, w * 1.4] : [w * 2.2, w * 1.2]);

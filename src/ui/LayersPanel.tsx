@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   ChevronDown, ChevronRight, CloudFog, Copy, Eye, EyeOff, Folder, FolderPlus, Grid3x3, Layers as LayersIcon, Lightbulb, Lock, LockOpen,
-  Mountain, Paintbrush, Plus, Shapes, Trash2, ArrowUp, ArrowDown,
+  Mountain, Paintbrush, Plus, Shapes, Trash2, ArrowUp, ArrowDown, Image as ImageIcon,
 } from 'lucide-react';
 import { panelOrder, type Editor } from '../editor/editor';
 import type { Layer, LayerKind } from '../model/types';
@@ -9,7 +9,7 @@ import { IconButton, Slider, tipProps, usePopover } from './controls';
 
 const KIND_ICON: Record<LayerKind, React.ReactNode> = {
   terrain: <Mountain size={13} />, paint: <Paintbrush size={13} />, objects: <Shapes size={13} />, grid: <Grid3x3 size={13} />,
-  effects: <CloudFog size={13} />, lighting: <Lightbulb size={13} />, folder: <Folder size={13} />,
+  effects: <CloudFog size={13} />, lighting: <Lightbulb size={13} />, folder: <Folder size={13} />, reference: <ImageIcon size={13} />,
 };
 
 export function LayersPanel({ editor: ed }: { editor: Editor }) {

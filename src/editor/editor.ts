@@ -30,6 +30,9 @@ export class Editor {
   terrain: TerrainRenderer;
   paint = new Map<string, PaintLayer>();
   objectCache = new ObjectTileCache();
+  /** Reference images (for tracing) keyed by layer id, plus their source files for saving. */
+  refImages = new Map<string, HTMLImageElement>();
+  private refBlobs = new Map<string, Blob>();
   history = new History();
   selection: string[] = [];
   tool: ToolId = 'select';
@@ -104,6 +107,16 @@ export class Editor {
       ed.rasterBlobs.set(id, { version: layer.version, blob: b! });
     }
     if (stored.rasters.terrain) ed.rasterBlobs.set('terrain', { version: mask.version, blob: stored.rasters.terrain });
+    for (const l of doc.layers) {
+      const b = l.kind === 'reference' ? stored.rasters[`ref:${l.id}`] : undefined;
+      if (!b) continue;
+      try {
+        ed.refImages.set(l.id, await blobToImage(b));
+        ed.refBlobs.set(l.id, b);
+      } catch {
+        /* unreadable reference image — ignore */
+      }
+    }
     ed.terrain.rebuild();
     if (doc.camera) ed.camera = { ...doc.camera };
     return ed;
@@ -171,7 +184,7 @@ export class Editor {
   };
 
   get env(): RenderEnv {
-    return { doc: this.doc, terrain: this.terrain, paint: this.paint, layerObjects: this.layerObjects, objectCache: this.objectCache };
+    return { doc: this.doc, terrain: this.terrain, paint: this.paint, layerObjects: this.layerObjects, objectCache: this.objectCache, refImages: this.refImages };
   }
 
   layer(id: string | null | undefined): Layer | undefined {
@@ -557,7 +570,7 @@ export class Editor {
   // ------------------------------------------------------------------ layers
 
   addLayer(kind: LayerKind, name?: string, index?: number): Layer {
-    const names: Record<LayerKind, string> = { objects: 'Objects', paint: 'Texture Paint', folder: 'Group', effects: 'Atmosphere', grid: 'Grid', terrain: 'Land & Water', lighting: 'Lighting' };
+    const names: Record<LayerKind, string> = { objects: 'Objects', paint: 'Texture Paint', folder: 'Group', effects: 'Atmosphere', grid: 'Grid', terrain: 'Land & Water', lighting: 'Lighting', reference: 'Reference Image' };
     const l = makeLayer(kind, name ?? names[kind], kind === 'objects' ? { depthSort: true } : {});
     const layers = [...this.doc.layers];
     const active = this.activeLayer;
@@ -660,6 +673,28 @@ export class Editor {
     const j = i - dir; // panel is top→bottom, dir 1 = up
     if (i < 0 || j < 0 || j >= order.length) return;
     this.moveLayer(id, order[j].id, dir === 1 ? 'above' : 'below');
+  }
+
+  /** Add (or replace) the reference image used for tracing an existing map. */
+  async setReferenceImage(file: Blob): Promise<Layer> {
+    const img = await blobToImage(file);
+    let layer = this.doc.layers.find((l) => l.kind === 'reference');
+    if (!layer) {
+      const firstObjects = this.doc.layers.findIndex((l) => l.kind === 'objects');
+      layer = this.addLayer('reference', 'Reference Image', firstObjects < 0 ? this.doc.layers.length : firstObjects);
+      this.updateLayer(layer.id, { opacity: 0.6 }, 'Reference opacity');
+      layer = this.layer(layer.id)!;
+    }
+    this.refImages.set(layer.id, img);
+    this.refBlobs.set(layer.id, file);
+    this.markChanged();
+    this.events.emit();
+    this.requestRender();
+    return layer;
+  }
+
+  get referenceLayer(): Layer | undefined {
+    return this.doc.layers.find((l) => l.kind === 'reference' && this.refImages.has(l.id));
   }
 
   // ------------------------------------------------------------------ camera
@@ -784,6 +819,10 @@ export class Editor {
       const doc: ProjectDoc = { ...this.doc, camera: { ...this.camera }, objects: { ...this.doc.objects }, layers: [...this.doc.layers] };
       const rasters: Record<string, Blob> = {};
       rasters.terrain = await this.rasterBlob('terrain', this.mask.version, this.mask.canvas);
+      for (const l of this.doc.layers) {
+        const b = l.kind === 'reference' ? this.refBlobs.get(l.id) : undefined;
+        if (b) rasters[`ref:${l.id}`] = b;
+      }
       for (const [id, p] of this.paint) {
         if (!p.hasContent) continue;
         rasters[id] = await this.rasterBlob(id, p.version, p.canvas);

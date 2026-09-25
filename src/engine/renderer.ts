@@ -24,6 +24,8 @@ export interface RenderEnv {
   layerObjects: (layerId: string) => SceneObject[];
   /** Optional tile cache for dense object layers (viewport only). */
   objectCache?: ObjectTileCache;
+  /** Reference images for tracing (never exported). */
+  refImages?: Map<string, CanvasImageSource>;
 }
 
 export interface RenderOptions {
@@ -41,6 +43,8 @@ export interface RenderOptions {
   hidden?: Set<string>;
   /** Lighting contrast is applied by the caller (e.g. as a CSS filter on the viewport). */
   skipContrast?: boolean;
+  /** Draw reference-image layers (editor only). */
+  references?: boolean;
 }
 
 /** Minimum number of on-screen objects before a layer is drawn through the tile cache. */
@@ -86,6 +90,14 @@ export function renderScene(ctx: CanvasRenderingContext2D, env: RenderEnv, o: Re
             ctx.imageSmoothingEnabled = true;
             ctx.drawImage(p.canvas, r.x * s, r.y * s, r.w * s, r.h * s, r.x, r.y, r.w, r.h);
           }
+        }
+        break;
+      }
+      case 'reference': {
+        const img = o.references ? env.refImages?.get(layer.id) : undefined;
+        if (img) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(img, 0, 0, doc.width, doc.height);
         }
         break;
       }

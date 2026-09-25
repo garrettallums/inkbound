@@ -2,6 +2,7 @@ import type { Vec } from '../core/geom';
 import type { Editor } from '../editor/editor';
 import type { PaintLayer } from '../engine/paintLayer';
 import type { Tool, ToolEvent } from './types';
+import { sampleReference, tracePick } from '../editor/trace';
 
 /** Walk from `a` to `b` emitting points every `step` world units (carrying the remainder). */
 function stamps(a: Vec | null, b: Vec, step: number, carry: { d: number }): Vec[] {
@@ -37,9 +38,16 @@ interface TerrainState { last: Vec | null; carry: { d: number }; invert: boolean
 export const terrainTool: Tool & { st: TerrainState | null } = {
   id: 'terrain',
   st: null,
-  cursor: () => 'none',
+  cursor: () => (tracePick.active ? 'crosshair' : 'none'),
 
   down(ed, ev) {
+    if (tracePick.active) {
+      const c = sampleReference(ed, ev.world.x, ev.world.y);
+      tracePick.active = false;
+      if (c) tracePick.onPick?.(c);
+      ed.events.emit();
+      return;
+    }
     const s = ed.settings.terrain;
     if (s.op === 'fill') {
       ed.mask.beginEdit();

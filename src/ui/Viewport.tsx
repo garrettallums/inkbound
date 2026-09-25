@@ -49,7 +49,7 @@ export function Viewport({ editor: ed, hand }: { editor: Editor; hand: boolean }
       const view = ed.viewRect();
       const stats = renderScene(ctx, ed.env, {
         view, pxPerUnit: z, deviceW: W, deviceH: H, cached: true,
-        grid: true, labels: true, lighting: true, effects: true, hidden: ed.hidden, skipContrast: true,
+        grid: true, labels: true, lighting: true, effects: true, hidden: ed.hidden, skipContrast: true, references: !ed.previewMode,
       });
       // Lighting contrast as a GPU-composited CSS filter keeps panning fast.
       const L = ed.doc.lighting;

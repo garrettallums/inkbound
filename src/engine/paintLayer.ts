@@ -165,6 +165,17 @@ export class PaintLayer {
     return { x: x0 / this.scale, y: y0 / this.scale, w: (x1 - x0) / this.scale, h: (y1 - y0) / this.scale };
   }
 
+  /** Composite a full-layer image (e.g. a masked texture) as one undoable edit. */
+  drawFull(src: CanvasImageSource, alpha = 1) {
+    this.touch(0, 0, this.w, this.h);
+    this.ctx.save();
+    this.ctx.globalAlpha = alpha;
+    this.ctx.drawImage(src, 0, 0, this.w, this.h);
+    this.ctx.restore();
+    this.hasContent = true;
+    this.version++;
+  }
+
   clear() {
     this.touch(0, 0, this.w, this.h);
     this.ctx.clearRect(0, 0, this.w, this.h);

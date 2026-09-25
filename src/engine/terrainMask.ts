@@ -356,6 +356,13 @@ export class TerrainMask {
     return true;
   }
 
+  /** Replace the whole field (undoable when inside beginEdit/endEdit). */
+  replaceAll(src: Uint8Array) {
+    this.touch(0, 0, this.w, this.h);
+    this.data.set(src.subarray(0, this.data.length));
+    this.markDirty({ x: 0, y: 0, w: this.w, h: this.h });
+  }
+
   fillAll(value: number) {
     this.touch(0, 0, this.w, this.h);
     this.data.fill(value);

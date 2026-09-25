@@ -12,6 +12,7 @@ import { TEXTURES, getTextureCanvas } from '../engine/textures';
 import { atmosphereTool, makeEffect } from '../tools/misc';
 import type { TerrainOp } from '../engine/terrainMask';
 import { AssetPanel } from './AssetPanel';
+import { TracePanel } from './TracePanel';
 import { Check, ColorInput, IconButton, NumberInput, Section, Seg, Slider, tipProps, useEmitter } from './controls';
 import { pathWidth } from '../tools/pathTool';
 
@@ -77,6 +78,7 @@ function TerrainPanel({ ed }: { ed: Editor }) {
   const set = (p: Partial<typeof s>) => ed.updateSettings('terrain', p);
   return (
     <>
+      <TracePanel ed={ed} />
       <Section title="Action">
         <div className="preset-grid">
           {TERRAIN_OPS.map((o) => (
